@@ -1,6 +1,7 @@
 #include "chip8.h"
 #include <string.h>
 
+// Five bytes per hexadecimal digit, loaded at memory address 0x050.
 static const uint8_t font[80] = {
     0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
     0x20, 0x60, 0x20, 0x20, 0x70, // 1

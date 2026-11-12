@@ -8,6 +8,7 @@ int chip8_fetch(Chip8 *chip8, uint16_t *opcode) {
         return 1;
     }
 
+    // Instructions are two bytes, stored most-significant byte first.
     *opcode = (chip8->memory[chip8->pc] << 8) | chip8->memory[chip8->pc + 1];
    
     chip8->pc += 2;
@@ -17,6 +18,7 @@ int chip8_fetch(Chip8 *chip8, uint16_t *opcode) {
 
 void chip8_execute(Chip8 *chip8, uint16_t opcode)
 {
+    // Decode register indices, the immediate byte, and the 12-bit address.
     uint8_t x = (opcode & 0x0F00) >> 8;
     uint8_t y = (opcode & 0x00F0) >> 4;
     uint8_t kk = opcode & 0x00FF;
@@ -172,6 +174,7 @@ void chip8_execute(Chip8 *chip8, uint16_t opcode)
             
         case 0xD:
             if (chip8->I + (opcode & 0xF) <= CHIP8_MEMORY_SIZE) {
+                // Sprite bits are XORed onto the display; VF reports erased pixels.
                 int x_pos, y_pos, idx, collision_flag = 0;
                 uint8_t sprite_byte, sprite_bit;
           
@@ -238,6 +241,7 @@ void chip8_execute(Chip8 *chip8, uint16_t opcode)
                     break;
                 
                 case 0x0A:
+                    // Wait for a pressed key to be released before advancing.
                     if (chip8->held_key < 16) {
                         if (!chip8->key[chip8->held_key]) {
                             chip8->V[x] = chip8->held_key;
@@ -254,6 +258,7 @@ void chip8_execute(Chip8 *chip8, uint16_t opcode)
                         }
                     }
 
+                    // Fetch already advanced PC; repeat this instruction while waiting.
                     chip8->pc -= 2;
                     
                     break;
@@ -275,6 +280,7 @@ void chip8_execute(Chip8 *chip8, uint16_t opcode)
                     break;
                     
                 case 0x33:
+                    // Store the decimal digits of Vx as three separate bytes.
                     if ((chip8->I + 2) < CHIP8_MEMORY_SIZE) {
                         chip8->memory[chip8->I] = chip8->V[x] / 100;
                         chip8->memory[chip8->I + 1] = (chip8->V[x] / 10) % 10;
@@ -318,7 +324,7 @@ void chip8_execute(Chip8 *chip8, uint16_t opcode)
             break;    
 
         default:
-            /* Unknown instruction family */
+            fprintf(stderr, "Error: Unsupport opcode %x\n", opcode);
             break;
     }
 }

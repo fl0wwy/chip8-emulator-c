@@ -12,7 +12,7 @@ TARGET = chip8.exe
 
 all: $(TARGET)
 
-$(TARGET): $(SOURCES)
+$(TARGET): $(SOURCES) include/chip8.h
 	$(CC) $(CFLAGS) $(SDL_CFLAGS) $(SOURCES) -o $(TARGET) $(SDL_LIBS)
 
 
@@ -32,5 +32,5 @@ tests/test_cpu.exe: tests/test_cpu.c src/cpu.c src/chip8.c include/chip8.h
 
 
 clean:
-	rm -f CHIP-8
+	rm -f $(TARGET) tests/*.exe
 

@@ -2,6 +2,7 @@
 #include "chip8.h"
 
 int chip8_load_rom(Chip8 *chip8, const char *filepath) {
+    // Programs occupy memory starting at 0x200; the lower area is reserved.
     const int ROM_CAPACITY = CHIP8_MEMORY_SIZE - PC_INIT;
     FILE *fp;
 

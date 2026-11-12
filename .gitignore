@@ -1,3 +1,4 @@
 roms/*
 .vscode
 /tests/*.exe
+chip8.exe

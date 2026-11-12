@@ -11,6 +11,7 @@ static SDL_AudioStream *stream = NULL;
 static bool audio_enabled = false;
 static int waveform_position = 0;
 
+// Array indices are CHIP-8 key values; entries are physical keyboard keys.
 static const SDL_Scancode chip8_keymap[16] = {
     SDL_SCANCODE_X,  // 0x0
     SDL_SCANCODE_1,  // 0x1
@@ -31,7 +32,7 @@ static const SDL_Scancode chip8_keymap[16] = {
 };
 
 int initialize_SDL(int width, int height) {
-    if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO)) {
+    if (!SDL_Init(SDL_INIT_VIDEO)) {
         SDL_Log("SDL could not initialize! SDL_Error: %s", SDL_GetError());
         return 1;
     }
@@ -52,24 +53,30 @@ int initialize_SDL(int width, int height) {
 
     SDL_SetRenderLogicalPresentation(renderer, 64, 32, SDL_LOGICAL_PRESENTATION_LETTERBOX);
 
-    SDL_AudioSpec spec;
-    spec.channels = 1;         
-    spec.format = SDL_AUDIO_F32;  
-    spec.freq = SAMPLE_RATE;           
+    if (SDL_Init(SDL_INIT_AUDIO)) {
+        SDL_AudioSpec spec;
+        spec.channels = 1;         
+        spec.format = SDL_AUDIO_F32;  
+        spec.freq = SAMPLE_RATE;           
 
-    stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec, NULL, NULL);
+        stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec, NULL, NULL);
 
-    if (!stream) {
-        SDL_Log("Couldn't create SDL audio stream: %s", SDL_GetError());
+        if (!stream) {
+            SDL_Log("Couldn't create SDL audio stream: %s", SDL_GetError());
+        }
+        else {
+            SDL_ResumeAudioStreamDevice(stream);
+        }
     }
     else {
-        SDL_ResumeAudioStreamDevice(stream);
+        SDL_Log("Couldn't initialize SDL audio: %s", SDL_GetError());
     }
 
     return 0;
 }
 
 int generate_square_waveform(float *samples, int count, int position) {
+    // Alternate positive and negative samples to produce a square-wave beep.
     int samples_per_cycle = SAMPLE_RATE / BEEP_FREQUENCY;
 
     for (int i = 0; i < count; i++) {
@@ -90,13 +97,13 @@ void audio_streaming(float *samples, int count) {
     if (!audio_enabled || !stream)
         return;
 
+    // Keep roughly 20 ms of samples queued without growing the audio buffer.
     int queued_bytes = SDL_GetAudioStreamQueued(stream);
 
     if (queued_bytes < 0)
         return;
 
     int queued_samples = queued_bytes / (int)sizeof(float);
-
     int missing_samples = AUDIO_BUFFER_SAMPLES - queued_samples;
 
     if (missing_samples <= 0)
@@ -119,6 +126,7 @@ void update_audio() {
 }
 
 void set_audio_flag(bool condition) {
+    // Discard remaining samples immediately when the sound timer expires.
     if (audio_enabled && !condition && stream) {
         SDL_ClearAudioStream(stream);
     }

@@ -7,6 +7,7 @@ int main(int argc, char *argv[]) {
 
     bool running = true;
 
+    // CPU, timers, and rendering advance on independent schedules.
     const double CPU_INTERVAL = 1.0 / 700.0;
     const double TIMER_INTERVAL = 1.0 / 60.0;
     const double RENDER_INTERVAL = 1.0 / 60.0;
@@ -43,6 +44,7 @@ int main(int argc, char *argv[]) {
         elapsed = (double)(current_time - previous_time) / SDL_NS_PER_SECOND;
         previous_time = current_time;
         
+        // Accumulate elapsed time so each subsystem keeps its own rate.
         cpu_accumulator += elapsed;
         timer_accumulator += elapsed;
         render_accumulator += elapsed;
