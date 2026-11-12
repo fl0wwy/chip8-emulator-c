@@ -324,7 +324,6 @@ void chip8_execute(Chip8 *chip8, uint16_t opcode)
             break;    
 
         default:
-            fprintf(stderr, "Error: Unsupport opcode %x\n", opcode);
             break;
     }
 }
