@@ -2,6 +2,10 @@
 
 A CHIP-8 emulator written in C using SDL3 for graphics, keyboard input, and audio. Implements the standard 64×32 display, 16-key keypad, 60 Hz delay and sound timers, and a square-wave beep.
 
+## Screenshot
+
+![CHIP-8 emulator running the IBM logo ROM](screenshots/IBM.png)
+
 ## Build
 
 Requires a C17 compiler, GNU Make, SDL3, and `pkg-config`. Developed on Windows with MSYS2 UCRT64.
